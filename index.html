@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IP Locator</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0f0f0f;
+      color: #eaeaea;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .box {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+    }
+    input, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px;
+    }
+    button {
+      cursor: pointer;
+    }
+    pre {
+      margin-top: 10px;
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>IP Locator</h2>
+    <input id="ip" placeholder="Enter IP or leave blank">
+    <button onclick="lookup()">Locate</button>
+    <pre id="result"></pre>
+  </div>
+
+  <script>
+    async function lookup() {
+      const ip = document.getElementById("ip").value.trim();
+      const url = ip
+        ? `https://ipapi.co/${ip}/json/`
+        : `https://ipapi.co/json/`;
+
+      document.getElementById("result").textContent = "Loading...";
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        document.getElementById("result").textContent =
+          `IP: ${data.ip}
+City: ${data.city}
+Region: ${data.region}
+Country: ${data.country_name}
+ISP: ${data.org}
+Latitude: ${data.latitude}
+Longitude: ${data.longitude}`;
+      } catch (e) {
+        document.getElementById("result").textContent = "Error fetching data.";
+      }
+    }
+  </script>
+</body>
+</html>
