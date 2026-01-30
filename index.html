@@ -7,9 +7,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -22,45 +20,46 @@ body {
   color: #9cff9c;
 }
 
-/* Terminal container */
 .terminal {
   width: 360px;
   background: #050805;
   border: 1px solid #143d14;
   border-radius: 8px;
-  box-shadow:
-    0 0 15px rgba(0, 255, 100, 0.15),
-    inset 0 0 25px rgba(0, 255, 100, 0.05);
   padding: 16px;
+  box-shadow:
+    0 0 15px rgba(0,255,100,.15),
+    inset 0 0 25px rgba(0,255,100,.05);
   position: relative;
   overflow: hidden;
 }
 
-/* Scanline overlay */
 .terminal::after {
   content: "";
   position: absolute;
   inset: 0;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(255,255,255,0.02),
-    rgba(255,255,255,0.02) 1px,
+    rgba(255,255,255,.02),
+    rgba(255,255,255,.02) 1px,
     transparent 1px,
     transparent 3px
   );
   pointer-events: none;
 }
 
-/* Header */
 .header {
   font-weight: 600;
-  margin-bottom: 12px;
   color: #b6ffb6;
+  margin-bottom: 12px;
 }
 
-/* Input */
+.prompt {
+  color: #4dff4d;
+}
+
 input {
   width: 100%;
+  margin-top: 4px;
   background: #020402;
   border: 1px solid #1e5f1e;
   color: #9cff9c;
@@ -69,57 +68,46 @@ input {
   outline: none;
 }
 
-input::placeholder {
-  color: #4f7f4f;
-}
+input::placeholder { color: #4f7f4f; }
 
-input:focus {
-  border-color: #4dff4d;
-}
+input:focus { border-color: #4dff4d; }
 
-/* Button */
 button {
   width: 100%;
   margin-top: 10px;
   padding: 8px;
   background: #061006;
-  color: #9cff9c;
   border: 1px solid #2e8f2e;
-  cursor: pointer;
+  color: #9cff9c;
   font-family: inherit;
+  cursor: pointer;
 }
 
 button:hover {
   background: #0a1a0a;
-  box-shadow: 0 0 10px rgba(0,255,100,0.25);
+  box-shadow: 0 0 10px rgba(0,255,100,.25);
 }
 
-/* Output */
 pre {
   margin-top: 12px;
   font-size: 0.85em;
   white-space: pre-wrap;
   color: #b6ffb6;
 }
-
-/* Prompt style */
-.prompt {
-  color: #4dff4d;
-}
 </style>
 </head>
 
 <body>
-  <div class="terminal">
-    <div class="header">[ IP-LOCATOR v1.0 ]</div>
+<div class="terminal">
+  <div class="header">[ IP-LOCATOR v1.1 ]</div>
 
-    <div class="prompt">$ target_ip</div>
-    <input id="ip" placeholder="IPv4 / IPv6 or leave blank">
+  <div class="prompt">$ target_ip</div>
+  <input id="ip" placeholder="IPv4 / IPv6 (leave blank = self)">
 
-    <button onclick="lookup()">RUN TRACE</button>
+  <button onclick="lookup()">RUN TRACE</button>
 
-    <pre id="result"></pre>
-  </div>
+  <pre id="result"></pre>
+</div>
 
 <script>
 function isValidIP(ip) {
@@ -137,30 +125,34 @@ async function lookup() {
     return;
   }
 
-  const url = ip ? `https://ipapi.co/${ip}/json/` : `https://ipapi.co/json/`;
-  result.textContent = "[*] querying node...";
+  const url = ip
+    ? `https://ipwhois.app/json/${ip}`
+    : `https://ipwhois.app/json/`;
+
+  result.textContent = "[*] initiating trace...";
 
   try {
     const res = await fetch(url);
     const data = await res.json();
 
-    if (data.error) {
+    if (!data.success) {
       result.textContent = "[!] lookup failed";
       return;
     }
 
     result.textContent =
-`[+] RESULT
--------------------------
+`[+] TRACE COMPLETE
+--------------------------
 IP        : ${data.ip}
-VERSION   : ${data.version || "unknown"}
+VERSION   : ${data.type}
 CITY      : ${data.city}
 REGION    : ${data.region}
-COUNTRY   : ${data.country_name}
-ISP       : ${data.org}
+COUNTRY   : ${data.country}
+ISP       : ${data.isp}
+ASN       : ${data.asn}
 LAT / LNG : ${data.latitude}, ${data.longitude}`;
-  } catch {
-    result.textContent = "[!] network error";
+  } catch (err) {
+    result.textContent = "[!] NETWORK FAILURE";
   }
 }
 </script>
