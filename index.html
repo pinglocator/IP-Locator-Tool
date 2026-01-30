@@ -5,108 +5,104 @@
 <title>IP Locator</title>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
   height: 100vh;
-  background: radial-gradient(circle at top, #0b0f0b, #050705);
+  background: #050505;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'JetBrains Mono', monospace;
-  color: #9cff9c;
+  font-family: Inter, system-ui, sans-serif;
+  color: #e5e5e5;
 }
 
-.terminal {
-  width: 360px;
-  background: #050805;
-  border: 1px solid #143d14;
-  border-radius: 8px;
-  padding: 16px;
+.app {
+  width: 420px;
+  background: #0b0b0b;
+  border-radius: 16px;
+  padding: 22px;
   box-shadow:
-    0 0 15px rgba(0,255,100,.15),
-    inset 0 0 25px rgba(0,255,100,.05);
-  position: relative;
-  overflow: hidden;
-}
-
-.terminal::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,.02),
-    rgba(255,255,255,.02) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  pointer-events: none;
+    0 0 0 1px rgba(255,255,255,0.04),
+    0 20px 40px rgba(0,0,0,0.6);
 }
 
 .header {
+  font-size: 1.1em;
   font-weight: 600;
-  color: #b6ffb6;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  color: #ffffff;
 }
 
-.prompt {
-  color: #4dff4d;
+.input-row {
+  display: flex;
+  gap: 10px;
 }
 
 input {
-  width: 100%;
-  margin-top: 4px;
-  background: #020402;
-  border: 1px solid #1e5f1e;
-  color: #9cff9c;
-  padding: 8px;
-  font-family: inherit;
+  flex: 1;
+  background: #060606;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #e5e5e5;
   outline: none;
 }
 
-input::placeholder { color: #4f7f4f; }
+input::placeholder {
+  color: #7a7a7a;
+}
 
-input:focus { border-color: #4dff4d; }
+input:focus {
+  border-color: rgba(255,255,255,0.2);
+}
 
 button {
-  width: 100%;
-  margin-top: 10px;
-  padding: 8px;
-  background: #061006;
-  border: 1px solid #2e8f2e;
-  color: #9cff9c;
-  font-family: inherit;
+  background: #121212;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #fff;
+  border-radius: 10px;
+  padding: 12px 16px;
   cursor: pointer;
 }
 
 button:hover {
-  background: #0a1a0a;
-  box-shadow: 0 0 10px rgba(0,255,100,.25);
+  background: #181818;
 }
 
-pre {
-  margin-top: 12px;
-  font-size: 0.85em;
+.output {
+  margin-top: 18px;
+  background: #060606;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 0.9em;
+  line-height: 1.6;
+  color: #dcdcdc;
+  min-height: 120px;
   white-space: pre-wrap;
-  color: #b6ffb6;
+}
+
+.label {
+  color: #9b9b9b;
 }
 </style>
 </head>
 
 <body>
-<div class="terminal">
-  <div class="header">[ IP-LOCATOR v1.1 ]</div>
+<div class="app">
+  <div class="header">IP Locator</div>
 
-  <div class="prompt">$ target_ip</div>
-  <input id="ip" placeholder="IPv4 / IPv6 (leave blank = self)">
+  <div class="input-row">
+    <input id="ip" placeholder="IPv4 / IPv6 (blank = you)">
+    <button onclick="lookup()">Run</button>
+  </div>
 
-  <button onclick="lookup()">RUN TRACE</button>
-
-  <pre id="result"></pre>
+  <div class="output" id="result">
+    <span class="label">Waiting for input…</span>
+  </div>
 </div>
 
 <script>
@@ -118,10 +114,10 @@ function isValidIP(ip) {
 
 async function lookup() {
   const ip = document.getElementById("ip").value.trim();
-  const result = document.getElementById("result");
+  const out = document.getElementById("result");
 
   if (ip && !isValidIP(ip)) {
-    result.textContent = "[!] INVALID IP FORMAT";
+    out.textContent = "Invalid IP format.";
     return;
   }
 
@@ -129,30 +125,28 @@ async function lookup() {
     ? `https://ipwhois.app/json/${ip}`
     : `https://ipwhois.app/json/`;
 
-  result.textContent = "[*] initiating trace...";
+  out.textContent = "Resolving address…";
 
   try {
     const res = await fetch(url);
     const data = await res.json();
 
     if (!data.success) {
-      result.textContent = "[!] lookup failed";
+      out.textContent = "Lookup failed.";
       return;
     }
 
-    result.textContent =
-`[+] TRACE COMPLETE
---------------------------
-IP        : ${data.ip}
-VERSION   : ${data.type}
-CITY      : ${data.city}
-REGION    : ${data.region}
-COUNTRY   : ${data.country}
-ISP       : ${data.isp}
-ASN       : ${data.asn}
-LAT / LNG : ${data.latitude}, ${data.longitude}`;
-  } catch (err) {
-    result.textContent = "[!] NETWORK FAILURE";
+    out.textContent =
+`IP Address   ${data.ip}
+Version      ${data.type}
+City         ${data.city}
+Region       ${data.region}
+Country      ${data.country}
+ISP          ${data.isp}
+ASN          ${data.asn}
+Coordinates  ${data.latitude}, ${data.longitude}`;
+  } catch {
+    out.textContent = "Network error.";
   }
 }
 </script>
