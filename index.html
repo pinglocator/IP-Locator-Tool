@@ -1,71 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>IP Locator</title>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      background: #0f0f0f;
-      color: #eaeaea;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .box {
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 10px;
-      width: 300px;
-    }
-    input, button {
-      width: 100%;
-      margin-top: 10px;
-      padding: 8px;
-    }
-    button {
-      cursor: pointer;
-    }
-    pre {
-      margin-top: 10px;
-      font-size: 0.85em;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>IP Locator</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at top, #0b0f0b, #050705);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  color: #9cff9c;
+}
+
+/* Terminal container */
+.terminal {
+  width: 360px;
+  background: #050805;
+  border: 1px solid #143d14;
+  border-radius: 8px;
+  box-shadow:
+    0 0 15px rgba(0, 255, 100, 0.15),
+    inset 0 0 25px rgba(0, 255, 100, 0.05);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Scanline overlay */
+.terminal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.02),
+    rgba(255,255,255,0.02) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+}
+
+/* Header */
+.header {
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #b6ffb6;
+}
+
+/* Input */
+input {
+  width: 100%;
+  background: #020402;
+  border: 1px solid #1e5f1e;
+  color: #9cff9c;
+  padding: 8px;
+  font-family: inherit;
+  outline: none;
+}
+
+input::placeholder {
+  color: #4f7f4f;
+}
+
+input:focus {
+  border-color: #4dff4d;
+}
+
+/* Button */
+button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px;
+  background: #061006;
+  color: #9cff9c;
+  border: 1px solid #2e8f2e;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button:hover {
+  background: #0a1a0a;
+  box-shadow: 0 0 10px rgba(0,255,100,0.25);
+}
+
+/* Output */
+pre {
+  margin-top: 12px;
+  font-size: 0.85em;
+  white-space: pre-wrap;
+  color: #b6ffb6;
+}
+
+/* Prompt style */
+.prompt {
+  color: #4dff4d;
+}
+</style>
 </head>
+
 <body>
-  <div class="box">
-    <h2>IP Locator</h2>
-    <input id="ip" placeholder="Enter IP or leave blank">
-    <button onclick="lookup()">Locate</button>
+  <div class="terminal">
+    <div class="header">[ IP-LOCATOR v1.0 ]</div>
+
+    <div class="prompt">$ target_ip</div>
+    <input id="ip" placeholder="IPv4 / IPv6 or leave blank">
+
+    <button onclick="lookup()">RUN TRACE</button>
+
     <pre id="result"></pre>
   </div>
 
-  <script>
-    async function lookup() {
-      const ip = document.getElementById("ip").value.trim();
-      const url = ip
-        ? `https://ipapi.co/${ip}/json/`
-        : `https://ipapi.co/json/`;
+<script>
+function isValidIP(ip) {
+  const ipv4 = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+  const ipv6 = /^([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}$/i;
+  return ipv4.test(ip) || ipv6.test(ip);
+}
 
-      document.getElementById("result").textContent = "Loading...";
+async function lookup() {
+  const ip = document.getElementById("ip").value.trim();
+  const result = document.getElementById("result");
 
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
+  if (ip && !isValidIP(ip)) {
+    result.textContent = "[!] INVALID IP FORMAT";
+    return;
+  }
 
-        document.getElementById("result").textContent =
-          `IP: ${data.ip}
-City: ${data.city}
-Region: ${data.region}
-Country: ${data.country_name}
-ISP: ${data.org}
-Latitude: ${data.latitude}
-Longitude: ${data.longitude}`;
-      } catch (e) {
-        document.getElementById("result").textContent = "Error fetching data.";
-      }
+  const url = ip ? `https://ipapi.co/${ip}/json/` : `https://ipapi.co/json/`;
+  result.textContent = "[*] querying node...";
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.error) {
+      result.textContent = "[!] lookup failed";
+      return;
     }
-  </script>
+
+    result.textContent =
+`[+] RESULT
+-------------------------
+IP        : ${data.ip}
+VERSION   : ${data.version || "unknown"}
+CITY      : ${data.city}
+REGION    : ${data.region}
+COUNTRY   : ${data.country_name}
+ISP       : ${data.org}
+LAT / LNG : ${data.latitude}, ${data.longitude}`;
+  } catch {
+    result.textContent = "[!] network error";
+  }
+}
+</script>
 </body>
 </html>
