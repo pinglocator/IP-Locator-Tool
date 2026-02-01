@@ -1,154 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>IP Locator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IP Locator – Fuck Around & Find Out</title>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  height: 100vh;
-  background: #050505;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: Inter, system-ui, sans-serif;
-  color: #e5e5e5;
-}
-
-.app {
-  width: 420px;
-  background: #0b0b0b;
-  border-radius: 16px;
-  padding: 22px;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.04),
-    0 20px 40px rgba(0,0,0,0.6);
-}
-
-.header {
-  font-size: 1.1em;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #ffffff;
-}
-
-.input-row {
-  display: flex;
-  gap: 10px;
-}
-
-input {
-  flex: 1;
-  background: #060606;
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 10px;
-  padding: 12px 14px;
-  color: #e5e5e5;
-  outline: none;
-}
-
-input::placeholder {
-  color: #7a7a7a;
-}
-
-input:focus {
-  border-color: rgba(255,255,255,0.2);
-}
-
-button {
-  background: #121212;
-  border: 1px solid rgba(255,255,255,0.08);
-  color: #fff;
-  border-radius: 10px;
-  padding: 12px 16px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #181818;
-}
-
-.output {
-  margin-top: 18px;
-  background: #060606;
-  border-radius: 12px;
-  padding: 14px;
-  font-size: 0.9em;
-  line-height: 1.6;
-  color: #dcdcdc;
-  min-height: 120px;
-  white-space: pre-wrap;
-}
-
-.label {
-  color: #9b9b9b;
-}
-</style>
+  <style>
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body {
+      min-height: 100dvh;
+      background: #000;
+      color: #e0e0e0;
+      font-family: 'Inter', system-ui, sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+    }
+    .app {
+      width: min(100%, 460px);
+      background: #0a0a0a;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 25px 50px -12px rgba(0,0,0,0.8);
+    }
+    header {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1.25rem;
+    }
+    .input-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    label { position: absolute; width: 1px; height: 1px; overflow: hidden; }
+    input {
+      flex: 1;
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0.75rem;
+      padding: 0.9rem 1rem;
+      color: #eee;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus { border-color: rgba(255,255,255,0.25); }
+    input::placeholder { color: #666; }
+    button {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      border-radius: 0.75rem;
+      padding: 0 1.25rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    button:hover { background: #222; }
+    .output {
+      background: #111;
+      border-radius: 0.875rem;
+      padding: 1.25rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      min-height: 140px;
+      position: relative;
+    }
+    .label { color: #888; font-weight: 500; }
+    .warning {
+      color: #ff5555;
+      font-size: 0.85rem;
+      margin: 1rem 0;
+      text-align: center;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: #222;
+      border: none;
+      color: #aaa;
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .copy-btn:hover { background: #333; color: #fff; }
+    @media (max-width: 480px) {
+      .input-row { flex-direction: column; gap: 0.75rem; }
+      button { padding: 0.9rem; width: 100%; }
+    }
+  </style>
 </head>
-
 <body>
+
 <div class="app">
-  <div class="header">IP Locator</div>
+  <header>IP Locator</header>
 
   <div class="input-row">
-    <input id="ip" placeholder="IPv4 / IPv6 (blank = you)">
+    <label for="ip">IP address</label>
+    <input id="ip" placeholder="IPv4 / IPv6 (blank = your IP)" autocomplete="off" autofocus>
     <button onclick="lookup()">Run</button>
   </div>
 
+  <div class="warning">
+    Every lookup leaks the IP to ipwhois.io. Don't be a dumbass and paste random people's shit.
+  </div>
+
   <div class="output" id="result">
-    <span class="label">Waiting for input…</span>
+    <span class="label">Enter IP or leave blank for yours, motherfucker…</span>
   </div>
 </div>
 
 <script>
+const result = document.getElementById('result');
+
+// Decent IPv4 (covers 0-255 properly)
+const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)$/;
+
+// Better IPv6 – handles :: compression, leading zeros, mixed IPv4 (but we skip last part for simplicity)
+const ipv6Regex = /^(?:(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){6}(?::[0-9a-fA-F]{1,4}|:(?::[0-9a-fA-F]{1,4}){0,5})|(?:[0-9a-fA-F]{1,4}:){5}(?:(?::[0-9a-fA-F]{1,4}){1,2}|:(?::[0-9a-fA-F]{1,4}){0,4})|(?:[0-9a-fA-F]{1,4}:){4}(?:(?::[0-9a-fA-F]{1,4}){1,3}|:(?::[0-9a-fA-F]{1,4}){0,3})|(?:[0-9a-fA-F]{1,4}:){3}(?:(?::[0-9a-fA-F]{1,4}){1,4}|:(?::[0-9a-fA-F]{1,4}){0,2})|(?:[0-9a-fA-F]{1,4}:){2}(?:(?::[0-9a-fA-F]{1,4}){1,5}|:(?::[0-9a-fA-F]{1,4}){0,1})|(?:[0-9a-fA-F]{1,4}:){1}(?:(?::[0-9a-fA-F]{1,4}){1,6}|:(?::[0-9a-fA-F]{1,4}){0,0})|(?::(?:(?::[0-9a-fA-F]{1,4}){1,7}|(?::[0-9a-fA-F]{1,4}){0,0})))$/i;
+
 function isValidIP(ip) {
-  const ipv4 = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
-  const ipv6 = /^([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}$/i;
-  return ipv4.test(ip) || ipv6.test(ip);
+  if (!ip) return true; // blank = your IP
+  return ipv4Regex.test(ip) || ipv6Regex.test(ip);
 }
 
 async function lookup() {
-  const ip = document.getElementById("ip").value.trim();
-  const out = document.getElementById("result");
-
+  const ip = document.getElementById('ip').value.trim();
+  
   if (ip && !isValidIP(ip)) {
-    out.textContent = "Invalid IP format.";
+    result.innerHTML = '<span class="label">That IP looks like hot garbage. Fix your shit.</span>';
     return;
   }
 
-  const url = ip
-    ? `https://ipwhois.app/json/${ip}`
-    : `https://ipwhois.app/json/`;
+  const url = ip ? `https://ipwho.is/${ip}` : 'https://ipwho.is/';  // note: ipwhois.app → ipwho.is is the current endpoint
 
-  out.textContent = "Resolving address…";
+  result.innerHTML = '<span class="label">Pinging the void…</span>';
 
   try {
     const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
     const data = await res.json();
 
     if (!data.success) {
-      out.textContent = "Lookup failed.";
+      if (data.message?.toLowerCase().includes('limit') || data.message?.includes('quota')) {
+        result.innerHTML = `<span class="label">Rate limit fucked. Free tier = 10k req/month. Come back later or pay, bitch.</span>`;
+      } else {
+        result.innerHTML = `<span class="label">API said: ${data.message || 'no clue why it died'}</span>`;
+      }
       return;
     }
 
-    out.textContent =
-`IP Address   ${data.ip}
-Version      ${data.type}
-City         ${data.city}
-Region       ${data.region}
-Country      ${data.country}
-ISP          ${data.isp}
-ASN          ${data.asn}
-Coordinates  ${data.latitude}, ${data.longitude}`;
-  } catch {
-    out.textContent = "Network error.";
+    // Build output with more useful shit
+    let out = `IP          ${data.ip || '—'}
+Version     ${data.type || '—'}
+City        ${data.city || '—'}
+Region      ${data.region || data.region_code || '—'}
+Country     ${data.country || '—'} (${data.country_code || '—'}) ${data.flag?.emoji || ''}
+Timezone    ${data.timezone?.id || '—'} (${data.timezone?.utc || '—'})
+ISP         ${data.connection?.isp || data.connection?.org || '—'}
+ASN         ${data.connection?.asn || '—'}
+Coords      ${data.latitude || '?'} , ${data.longitude || '?'}`;
+
+    // Threat / proxy flags (only on paid plans usually)
+    if (data.security) {
+      out += `\n\nThreat:
+Proxy/VPN   ${data.security.proxy || data.security.vpn ? 'YES' : 'No'}
+TOR         ${data.security.tor ? 'YES' : 'No'}
+Hosting     ${data.security.hosting ? 'YES' : 'No'}
+Anonymous   ${data.security.anonymous ? 'YES' : 'No'}`;
+    }
+
+    result.innerHTML = `<pre>${out}</pre>
+<button class="copy-btn" onclick="copyToClipboard()">Copy</button>`;
+  } catch (err) {
+    result.innerHTML = '<span class="label">Network fucked or API is dead. Try again later.</span>';
   }
 }
+
+function copyToClipboard() {
+  const text = result.querySelector('pre')?.innerText;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = result.querySelector('.copy-btn');
+    btn.textContent = 'Copied, asshole';
+    setTimeout(() => btn.textContent = 'Copy', 1800);
+  });
+}
+
+// Bonus: button to auto-fill your own IP
+document.querySelector('header').insertAdjacentHTML('beforeend', ' <button onclick="document.getElementById(\'ip\').value=\'\';lookup()" style="font-size:0.8rem;background:#222;padding:0.3rem 0.7rem;border-radius:0.5rem;cursor:pointer;border:none;color:#aaa;margin-left:0.8rem;">Your IP</button>');
 </script>
+
 </body>
 </html>
